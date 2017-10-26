@@ -1,5 +1,10 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
+import           Data.Char
+import           Data.List
+import           Data.List.Split
+
+
 data Price =
     Price Integer deriving (Eq, Show)
 
@@ -159,3 +164,12 @@ main = do
 
 foldTree :: (a -> b -> b) -> b -> BinaryTree a -> b
 foldTree f x tree = foldr f x (preorder tree)
+
+
+capitalizeWord :: String -> String
+capitalizeWord []     = []
+capitalizeWord (x:xs) = toUpper x : xs
+
+capitalizeParagraph :: String -> String
+capitalizeParagraph word = intercalate ". " $ map capitalizeWord $ splitOn ". " word
+
