@@ -137,3 +137,18 @@ either' _ g (Right y) = g y
 eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
 eitherMaybe'' _ (Left _)  = Nothing
 eitherMaybe'' f (Right x) = Just $ f x
+
+-- unfolds
+-- 1.
+myIterate :: (a -> a) -> a -> [a]
+myIterate f x = f x : (myIterate f (f x))
+
+-- 2.
+myUnfoldr :: (b -> Maybe (a, b)) -> b -> [a]
+myUnfoldr f x = case f x of
+    Nothing     -> []
+    Just (y, z) -> y : (myUnfoldr f z)
+
+-- 3.
+betterIterate :: (a -> a) -> a -> [a]
+betterIterate f x = myUnfoldr (\y -> Just (f y, f y)) x
