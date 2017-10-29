@@ -99,3 +99,41 @@ flipMaybe :: [Maybe a] -> Maybe [a]
 flipMaybe xs = if any isNothing xs
                 then Nothing
                 else Just $ catMaybes xs
+
+
+-- Small library for Either
+-- 1.
+lefts' :: [Either a b] -> [a]
+lefts' = foldr lefts'' []
+
+lefts'' :: Either a b -> [a] -> [a]
+lefts'' (Right _) xs = xs
+lefts'' (Left x) xs  = x:xs
+
+
+-- 2.
+rights' :: [Either a b] -> [b]
+rights' = foldr rights'' []
+
+rights'' :: Either a b -> [b] -> [b]
+rights'' (Left _) xs  = xs
+rights'' (Right x) xs = x:xs
+
+-- 3.
+paritionEithers' :: [Either a b] -> ([a], [b])
+paritionEithers' xs = (lefts' xs, rights' xs)
+
+-- 4.
+eitherMaybe' :: (b -> c) -> Either a b -> Maybe c
+eitherMaybe' _ (Left _)  = Nothing
+eitherMaybe' f (Right x) = Just $ f x
+
+-- 5.
+either' :: (a -> c) -> (b -> c) -> Either a b -> c
+either' f _ (Left x)  = f x
+either' _ g (Right y) = g y
+
+-- 6.
+eitherMaybe'' :: (b -> c) -> Either a b -> Maybe c
+eitherMaybe'' _ (Left _)  = Nothing
+eitherMaybe'' f (Right x) = Just $ f x
