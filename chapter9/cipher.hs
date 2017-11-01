@@ -21,3 +21,11 @@ cipher n = map (rightShift n)
 
 unCipher :: Int -> [Char] -> [Char]
 unCipher n = map (leftShift n)
+
+main :: IO ()
+main = do
+    putStr "Insert Caesar key: "
+    key <- getLine
+    putStr "Insert word to be ciphered: "
+    word <- getLine
+    putStrLn $ "Ciphered word: " ++ (cipher (read key :: Int) word)

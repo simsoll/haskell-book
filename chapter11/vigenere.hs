@@ -42,3 +42,11 @@ helper key (x:xs) (acc, i) =
     case x of
         ' ' -> helper key xs (Nothing : acc, i)
         _   -> helper key xs ((Just $ mod i (length key)) : acc, i + 1)
+
+main :: IO ()
+main = do
+    putStr "Insert Vigeneré key: "
+    key <- getLine
+    putStr "Insert word to be ciphered: "
+    word <- getLine
+    putStrLn $ "Ciphered word: " ++ (vigenere word key)
