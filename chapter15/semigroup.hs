@@ -82,6 +82,31 @@ instance Semigroup BoolConj where
 instance Arbitrary BoolConj where
     arbitrary = frequency [ (1, return $ BoolConj True), (1, return $ BoolConj False)]
 
+-- 7.
+
+newtype BoolDisj = BoolDisj Bool deriving (Eq, Show)
+
+instance Semigroup BoolDisj where
+    BoolDisj False <> BoolDisj False = BoolDisj False
+    BoolDisj _ <> BoolDisj _ = BoolDisj True
+
+instance Arbitrary BoolDisj where
+    arbitrary = frequency [(1, return $ BoolDisj True), (1, return $ BoolDisj False)]
+
+-- 8.
+
+data Or a b = Fst a | Snd b  deriving (Eq, Show)
+
+instance Semigroup (Or a b) where
+    (Snd a) <> _ = Snd a
+    _ <> (Snd b) = Snd b
+    _ <> (Fst a) = Fst a
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
+    arbitrary = do
+        a <- arbitrary
+        b <- arbitrary
+        frequency [(1, return $ Fst a), (1, return $ Snd b)]
 
 type Assoc x = x -> x -> x -> Bool
 
@@ -93,4 +118,6 @@ main = do
     quickCheck (semigroupAssoc :: (Assoc (Three String String String)))
     quickCheck (semigroupAssoc :: (Assoc (Four String String String String)))
     quickCheck (semigroupAssoc :: (Assoc BoolConj))
+    quickCheck (semigroupAssoc :: (Assoc BoolDisj))
+    quickCheck (semigroupAssoc :: (Assoc (Or String String)))
 
