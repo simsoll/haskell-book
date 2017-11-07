@@ -11,9 +11,6 @@ instance Semigroup Trivial where
 instance Arbitrary Trivial where
     arbitrary = return Trivial
 
-semigroupAssoc :: (Eq m, Semigroup m) => m -> m -> m -> Bool
-semigroupAssoc a b c =
-    (a <> (b <> c)) == ((a <> b) <> c)
 
 -- 2.
 
@@ -108,7 +105,67 @@ instance (Arbitrary a, Arbitrary b) => Arbitrary (Or a b) where
         b <- arbitrary
         frequency [(1, return $ Fst a), (1, return $ Snd b)]
 
+-- 9.
+
+newtype Combine a b = Combine { unCombine :: (a -> b)}
+
+instance (Semigroup b) => Semigroup (Combine a b) where
+    (Combine f) <> (Combine g) = Combine (\a -> f a <> g a)
+
+instance Show (Combine a b) where
+    show (Combine _) = "Combine f"
+
+instance (CoArbitrary a, Arbitrary b) => Arbitrary (Combine a b) where
+    arbitrary = do
+      f <- arbitrary
+      return $ Combine f
+
+-- 10.
+
+newtype Comp a = Comp { unComp :: (a -> a)}
+
+instance Semigroup (Comp a) where
+    (Comp f) <> (Comp g) = Comp (f . g)
+
+instance (CoArbitrary a, Arbitrary a) => Arbitrary (Comp a) where
+    arbitrary = do
+        f <- arbitrary
+        return $ Comp f
+
+instance Show (Comp a ) where
+    show (Comp _) = "Comp f"
+
+-- 11.
+
+data Validation a b = MyFailure a | MySuccess b deriving (Eq, Show)
+
+instance Semigroup a => Semigroup (Validation a b) where
+    MySuccess x <> _ = MySuccess x
+    _ <> MySuccess y = MySuccess y
+    MyFailure x <> MyFailure y = MyFailure (x <> y)
+
+
+instance (Arbitrary a, Arbitrary b) => Arbitrary (Validation a b) where
+    arbitrary = do
+        a <- arbitrary
+        b <- arbitrary
+        frequency [(1, return $ MyFailure a), (1, return $ MySuccess b)]
+
+
+
 type Assoc x = x -> x -> x -> Bool
+type FuncAssoc f x = f -> f -> f -> x -> Bool
+
+semigroupAssoc :: (Eq m, Semigroup m) => Assoc m
+semigroupAssoc a b c =
+    (a <> (b <> c)) == ((a <> b) <> c)
+
+semigroupFuncAssocCombine :: (Eq b, Semigroup b) => FuncAssoc (Combine a b) a
+semigroupFuncAssocCombine f g h a = unCombine ((f <> g) <> h) a == unCombine (f <> (g <> h)) a
+
+semigroupFuncAssocComp :: (Eq a) => FuncAssoc (Comp a) a
+semigroupFuncAssocComp f g h a = unComp ((f <> g) <> h) a == unComp (f <> (g <> h)) a
+
 
 main :: IO()
 main = do
@@ -120,4 +177,7 @@ main = do
     quickCheck (semigroupAssoc :: (Assoc BoolConj))
     quickCheck (semigroupAssoc :: (Assoc BoolDisj))
     quickCheck (semigroupAssoc :: (Assoc (Or String String)))
+    quickCheck (semigroupFuncAssocCombine :: (FuncAssoc (Combine String String) String))
+    quickCheck (semigroupFuncAssocComp :: (FuncAssoc (Comp String) String))
+    quickCheck (semigroupAssoc :: (Assoc (Validation String String)))
 
