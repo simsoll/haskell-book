@@ -63,14 +63,14 @@ monoidLeftIdentity a = (mempty <> a) == a
 monoidRightIdentity :: (Eq m, Monoid m) => m -> Bool
 monoidRightIdentity a = (a <> mempty) == a
 
-main :: IO ()
-main = do
-    let ma = monoidAssoc :: BullMappend
-        mli = monoidLeftIdentity
-        mlr = monoidRightIdentity
-    quickCheck (ma :: BullMappend)
-    quickCheck (mli :: Bull -> Bool)
-    quickCheck (mlr :: Bull -> Bool)
+-- main :: IO ()
+-- main = do
+--     let ma = monoidAssoc :: BullMappend
+--         mli = monoidLeftIdentity
+--         mlr = monoidRightIdentity
+--     quickCheck (ma :: BullMappend)
+--     quickCheck (mli :: Bull -> Bool)
+--     quickCheck (mlr :: Bull -> Bool)
 
 -- Maybe Another Monoid
 
@@ -84,20 +84,20 @@ instance Monoid (First' a) where
     mappend (First' Nada) (First' (Only y)) = First' $ Only y
     mappend _ _                             = First' Nada
 
-gen' :: Arbitrary a => Gen (First' a)
-gen' = do
-    a <- arbitrary
-    frequency [(1, return $ First' Nada), (3, return $ First' (Only a))]
-
 instance Arbitrary a => Arbitrary (First' a) where
-    arbitrary = gen'
+    arbitrary = do
+        a <- arbitrary
+        frequency [(1, return $ First' Nada), (3, return $ First' (Only a))]
+
+
+
 
 type FirstMappend = First' String -> First' String -> First' String -> Bool
 
 type FstId = First' String -> Bool
 
-main2 :: IO ()
-main2 = do
+main :: IO ()
+main = do
     quickCheck (monoidAssoc :: FirstMappend)
     quickCheck (monoidLeftIdentity :: FstId)
     quickCheck (monoidRightIdentity :: FstId)
