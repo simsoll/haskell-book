@@ -1,3 +1,5 @@
+module MySemigroup where
+
 import           Data.Semigroup
 import           Test.QuickCheck
 

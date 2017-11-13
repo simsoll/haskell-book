@@ -1,6 +1,12 @@
+module MyMonoid where
+
 import           Control.Monad
 import           Data.Monoid
 import           Test.QuickCheck
+
+import           Data.Monoid     hiding ((<>))
+import           Data.Semigroup  hiding (mappend)
+import           MySemigroup
 
 -- Optional Monoid
 
@@ -88,6 +94,8 @@ instance Arbitrary a => Arbitrary (First' a) where
     arbitrary = do
         a <- arbitrary
         frequency [(1, return $ First' Nada), (3, return $ First' (Only a))]
+
+-- 1.
 
 
 
