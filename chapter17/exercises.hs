@@ -1,5 +1,6 @@
 import           Data.List   (elemIndex)
 import           Data.Monoid
+
 -- Lookups
 
 -- 1.
@@ -78,3 +79,25 @@ f = const <$> Just "Hello" <*> pure "World"
 
 -- 2.
 g = (,,,) <$> Just 90 <*> Just 10 <*> Just "Tierness" <*> pure [1, 2, 3]
+
+-- List Applicative
+data List a =
+    Nil
+    | Cons a (List a)
+    deriving (Eq, Show)
+
+instance Functor List where
+    fmap _ Nil        = Nil
+    fmap f (Cons a b) = Cons (f a) (fmap f b)
+
+
+instance Applicative List where
+    pure a = Cons a (Nil)
+    Nil <*> _ = Nil
+    _ <*> Nil = Nil
+    Cons f Nil <*> Cons a as = Cons (f a) (Cons f Nil <*> as)
+    Cons f fs <*> Cons a as = Cons (f a) (Cons f Nil <*> as) `append` (fs <*> Cons a as)
+
+append :: List a -> List a -> List a
+append Nil ys         = ys
+append (Cons x xs) ys = Cons x $ xs `append` ys
