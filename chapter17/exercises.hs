@@ -101,3 +101,23 @@ instance Applicative List where
 append :: List a -> List a -> List a
 append Nil ys         = ys
 append (Cons x xs) ys = Cons x $ xs `append` ys
+
+-- ZipList Applicative
+
+newtype ZipList' a =
+    ZipList' (List a)
+    deriving (Eq, Show)
+
+instance Functor ZipList' where
+    fmap f (ZipList' xs) = ZipList' $ fmap f xs
+
+instance Applicative ZipList' where
+    pure a = ZipList' (Cons a Nil)
+    ZipList' f <*> ZipList' b = ZipList' (zipList' f b)
+
+zipList' :: List (a -> b) -> List a -> List b
+zipList' Nil _                     = Nil
+zipList' _ Nil                     = Nil
+zipList' (Cons f Nil) (Cons a Nil) = Cons (f a) Nil
+zipList' (Cons f fs) (Cons a as)   = Cons (f a) (zipList' fs as)
+
