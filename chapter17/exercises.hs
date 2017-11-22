@@ -121,3 +121,19 @@ zipList' _ Nil                     = Nil
 zipList' (Cons f Nil) (Cons a Nil) = Cons (f a) Nil
 zipList' (Cons f fs) (Cons a as)   = Cons (f a) (zipList' fs as)
 
+-- Variations on Either
+data Validation e a =
+    Failure e
+    | Success a
+    deriving (Eq, Show)
+
+instance Functor (Validation e) where
+    fmap f (Failure e) = Failure e
+    fmap f (Success a) = Success $ f a
+
+instance Monoid e => Applicative (Validation e) where
+    pure a = Success a
+    Failure e1 <*> Failure e2 = Failure (mappend e1 e2)
+    Failure e <*> _ = Failure e
+    _ <*> Failure e = Failure e
+    Success f <*> Success a = Success $ f a
