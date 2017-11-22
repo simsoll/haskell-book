@@ -1,4 +1,5 @@
-import           Data.List   (elemIndex)
+import           Control.Applicative (liftA3)
+import           Data.List           (elemIndex)
 import           Data.Monoid
 
 -- Lookups
@@ -137,3 +138,69 @@ instance Monoid e => Applicative (Validation e) where
     Failure e <*> _ = Failure e
     _ <*> Failure e = Failure e
     Success f <*> Success a = Success $ f a
+
+-- Chapter Exercises
+
+-- 1.
+data Pair a = Pair a a deriving Show
+
+instance Functor Pair where
+    fmap f (Pair x y) = Pair (f x) (f y)
+
+instance Applicative Pair where
+    pure a = Pair a a
+    Pair f g <*> Pair a b = Pair (f a) (g b)
+
+-- 2.
+data Two a b = Two a b deriving (Show)
+
+instance Functor (Two a) where
+    fmap f (Two a b) = Two a (f b)
+
+instance Monoid a => Applicative (Two a) where
+    pure b = Two mempty b
+    Two f g <*> Two a b = Two (mappend f a) (g b)
+
+-- 3.
+data Three a b c = Three a b c deriving (Show)
+
+instance Functor (Three a b) where
+    fmap f (Three a b c) = Three a b (f c)
+
+instance (Monoid a, Monoid b) => Applicative (Three a b) where
+    pure c = Three mempty mempty c
+    Three f g h <*> Three a b c = Three (mappend f a) (mappend g b) (h c)
+
+-- 4.
+data Three' a b = Three' a b b deriving (Show)
+
+instance Functor (Three' a) where
+    fmap f (Three' a b1 b2) = Three' a (f b1) (f b2)
+
+instance Monoid a => Applicative (Three' a) where
+    pure b = Three' mempty b b
+    Three' f g1 g2 <*> Three' a b1 b2 = Three' (mappend f a) (g1 b1) (g2 b2)
+
+-- 5.
+data Four a b c d = Four a b c d deriving (Show)
+
+instance Functor (Four a b c) where
+    fmap f (Four a b c d) = Four a b c (f d)
+
+instance (Monoid a, Monoid b, Monoid c) => Applicative (Four a b c) where
+    pure d = Four mempty mempty mempty d
+    Four f g h i <*> Four a b c d = Four (mappend f a) (mappend g b) (mappend h c) (i d)
+
+-- 6.
+data Four' a b = Four' a a a b deriving (Show)
+
+instance Functor (Four' a) where
+    fmap f (Four' a1 a2 a3 b) = Four' a1 a2 a3 (f b)
+
+instance (Monoid a) => Applicative (Four' a) where
+    pure b = Four' mempty mempty mempty b
+    Four' f1 f2 f3 g <*> Four' a1 a2 a3 b = Four' (mappend f1 a1) (mappend f2 a2) (mappend f3 a3) (g b)
+
+-- Combinations
+combos :: [a] -> [b] -> [c] -> [(a, b, c)]
+combos = liftA3 (,,)
