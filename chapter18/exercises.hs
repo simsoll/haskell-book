@@ -17,7 +17,7 @@ instance Functor (Sum a) where
     fmap f (Second b) = Second $ f b
 
 instance Applicative (Sum a) where
-    pure b = Second b
+    pure = Second
     First a <*> _ = First a
     _ <*> First a = First a
     Second f <*> Second b = Second $ f b
