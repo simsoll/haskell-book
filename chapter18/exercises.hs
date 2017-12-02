@@ -107,3 +107,45 @@ instance Monad List where
     return = pure
     Nil >>= _ = Nil
     a >>= f = join $ fmap f a
+
+-- Chapter Exercises (functions)
+
+-- 1.
+
+j :: Monad m => m (m a) -> m a
+j = (=<<) id
+
+-- 2.
+
+l1 :: Monad m => (a -> b) -> m a -> m b
+l1 f ma =  ma >>= (return . f)
+
+-- 3.
+
+l2 :: Monad m => (a -> b -> c) -> m a -> m b -> m c
+l2 f ma mb = do
+    a <- ma
+    b <- mb
+    return $ f a b
+
+-- 4.
+
+a :: Monad m => m a -> m (a -> b) -> m b
+a ma mf = do
+    a' <- ma
+    f <- mf
+    return $ f a'
+
+-- 5.
+
+meh :: Monad m => [a] -> (a -> m b) -> m [b]
+meh [] _     = return []
+meh (x:xs) f = do
+    x' <- f x
+    xs' <- meh xs f
+    return $ x' : xs'
+
+-- 6.
+
+flipType :: Monad m => [m a] -> m [a]
+flipType = flip meh id
