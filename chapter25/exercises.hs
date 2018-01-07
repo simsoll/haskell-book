@@ -18,3 +18,15 @@ instance (Applicative f, Applicative g) => Applicative (Compose f g) where
 
     (<*>) :: Compose f g (a -> b) -> Compose f g a -> Compose f g b
     (Compose f) <*> (Compose a) = Compose $ liftA2 (<*>) f a
+
+-- Compose Instances
+
+-- 1.
+
+instance (Foldable f, Foldable g) => Foldable (Compose f g) where
+    foldMap f (Compose fga) = (foldMap . foldMap) f fga
+
+-- 2.
+
+instance (Traversable f, Traversable g) => Traversable (Compose f g) where
+    traverse f (Compose fga) = Compose <$> (traverse . traverse) f fga
