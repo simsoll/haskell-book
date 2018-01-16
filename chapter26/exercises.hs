@@ -1,3 +1,7 @@
+import           Control.Monad.Trans.Except
+import           Control.Monad.Trans.Maybe
+import           Control.Monad.Trans.Reader
+
 -- EitherT
 
 newtype EitherT e m a =
@@ -62,5 +66,69 @@ instance Monad m => Applicative (StateT s m) where
     pure a = StateT $ \s -> return (a, s)
     StateT smfab <*> StateT sma = StateT $ \s -> do
         (a, s') <- sma s
-        (fab, s'') <- smfab s
+        (fab, s'') <- smfab s'
         return (fab a, s'')
+
+-- 3.
+
+instance Monad m => Monad (StateT s m) where
+    return = pure
+
+    StateT sma >>= fasmb = StateT $ \s -> do
+        (a, s') <- sma s
+        runStateT (fasmb a) s'
+
+-- Wrap It Up
+
+embedded :: MaybeT (ExceptT String (ReaderT () IO)) Int
+embedded = MaybeT . ExceptT . ReaderT $ const (return (Right (Just 1)))
+
+-- Lift More
+
+class MonadTrans t where
+    -- | Lift a computation from
+    -- the argument monad to
+    -- the constructed monad.
+    lift :: (Monad m) => m a -> t m a
+
+-- 1.
+
+instance MonadTrans (EitherT e) where
+    lift = EitherT . fmap Right
+
+
+-- 2.
+
+instance MonadTrans (StateT s) where
+    lift ma = StateT $ \s -> do
+        a <- ma
+        return (a, s)
+
+-- Some Instances
+
+
+class (Monad m) => MonadIO m where
+    -- | Lift a computation
+    -- from the 'IO' monad.
+    liftIO :: IO a -> m a
+
+-- 1.
+instance MonadTrans MaybeT where
+    lift = MaybeT . fmap Just
+
+instance (MonadIO m) => MonadIO (MaybeT m) where
+    liftIO = lift .liftIO
+
+-- 2.
+
+instance MonadTrans (ReaderT r) where
+    lift = ReaderT . const
+
+
+instance (MonadIO m) => MonadIO (ReaderT r m) where
+    liftIO = lift .liftIO
+
+-- 3.
+
+instance (MonadIO m) => MonadIO (StateT s m) where
+    liftIO = lift .liftIO
